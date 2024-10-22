@@ -2,12 +2,15 @@
 # SSH 一键工具
 - [SSH一键工具](https://github.com/scaleflower/Tools/blob/main/scripts/ssh_tool.sh)
   来源于：https://github.com/eooce/Sing-box
-  ```ssh综合工具箱一键脚本
+  
+```ssh综合工具箱一键脚本
   curl -fsSL https://raw.githubusercontent.com/scaleflower/Tools/refs/heads/main/scripts/ssh_tool.sh -o ssh_tool.sh && chmod +x ssh_tool.sh && ./ssh_tool.sh
 ```
 
 # DD 一键重新安装系统
+
 -DD重装一键脚本
+
 ```DD脚本
 curl -O https://raw.githubusercontent.com/scaleflower/Tools/refs/heads/main/scripts/reinstall.sh && bash reinstall.sh
 ```
