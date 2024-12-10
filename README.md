@@ -39,9 +39,10 @@ bash -c "$(curl --insecure -fsSL https://raw.githubusercontent.com/scaleflower/T
 云服务器请用公网IP访问
 
 ---
-
-免费领取ChatGPT API试用
-https://free.v36.cm
+# kejilion 常用脚本
+```
+bash <(curl -sL kejilion.sh)
+```
 ---
 
 
