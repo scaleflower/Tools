@@ -21,6 +21,15 @@ curl -O https://raw.githubusercontent.com/scaleflower/Tools/refs/heads/main/scri
 ```
 bash <(wget --no-check-certificate -qO- 'https://moeclub.org/attachment/LinuxShell/InstallNET.sh') -u 20.04 -v 64 -a -firmware -p XXXX
 ```
+
+例子：
+arm：
+bash <(wget --no-check-certificate -qO- 'https://moeclub.org/attachment/LinuxShell/InstallNET.sh') -d 12 -v arm64 -a -firmware
+
+
+amd：
+bash <(wget --no-check-certificate -qO- 'https://raw.githubusercontent.com/leitbogioro/Tools/master/Linux_reinstall/InstallNET.sh') -debian 12 -pwd Password121313131313 -port 22
+
 ---
 # 小雅Alist的相关周边
 来源于：  https://github.com/DDS-Derek/xiaoya-alist
