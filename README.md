@@ -54,4 +54,9 @@ bash <(curl -sL kejilion.sh)
 ```
 ---
 
+# 一键部署节点脚本
+```
+bash <(curl -L -s https://raw.githubusercontent.com/byJoey/ibmfree/refs/heads/main/install.sh)
+```
+---
 
