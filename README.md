@@ -60,3 +60,27 @@ bash <(curl -L -s https://raw.githubusercontent.com/byJoey/ibmfree/refs/heads/ma
 ```
 ---
 
+# GOST 端口映射管理工具
+
+交互式GOST端口映射管理工具，支持多服务器管理、批量添加/删除服务、配置备份等功能。
+
+**使用方式:**
+```bash
+# 下载脚本
+curl -O https://raw.githubusercontent.com/scaleflower/Tools/main/scripts/gost_manager.py
+
+# 运行
+python3 gost_manager.py
+```
+
+**主要功能:**
+- 多服务器切换管理
+- 查看所有端口映射服务
+- 添加/删除单个服务
+- 批量添加服务
+- 配置自动备份与手动备份
+- 服务器连接测试
+
+**详细文档:** [GOST管理工具使用说明](https://github.com/scaleflower/Tools/tree/main/docs/gost_manager)
+---
+
