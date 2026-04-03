@@ -597,6 +597,163 @@ def backup_config():
 
     input("\n按回车继续...")
 
+def restore_config():
+    """从备份恢复配置"""
+    if not current_server:
+        print("❌ 请先选择服务器")
+        input("按回车继续...")
+        return
+
+    backup_dir = os.path.join(os.path.dirname(__file__), "backups")
+
+    if not os.path.exists(backup_dir):
+        print("❌ 备份目录不存在，请先进行备份")
+        input("按回车继续...")
+        return
+
+    # 获取所有备份文件
+    backup_files = [f for f in os.listdir(backup_dir) if f.endswith('.json')]
+
+    if not backup_files:
+        print("❌ 没有找到备份文件")
+        input("按回车继续...")
+        return
+
+    # 按修改时间排序（最新的在前）
+    backup_files.sort(key=lambda x: os.path.getmtime(os.path.join(backup_dir, x)), reverse=True)
+
+    clear_screen()
+    print_header()
+    print("\n" + "=" * 60)
+    print("                 恢复配置")
+    print("=" * 60)
+    print()
+    print("  可用备份文件:")
+    print("  " + "-" * 50)
+
+    for i, f in enumerate(backup_files[:15], 1):  # 最多显示15个
+        file_path = os.path.join(backup_dir, f)
+        mtime = datetime.fromtimestamp(os.path.getmtime(file_path)).strftime("%Y-%m-%d %H:%M:%S")
+        size = os.path.getsize(file_path)
+        print(f"  {i:2}. {f:<40} {mtime} ({size}B)")
+
+    print("  " + "-" * 50)
+    print(f"  0. 返回")
+
+    choice = input("\n请选择要恢复的备份: ").strip()
+
+    if choice == "0":
+        return
+
+    try:
+        idx = int(choice) - 1
+        if idx < 0 or idx >= len(backup_files):
+            print("❌ 无效选项")
+            input("按回车继续...")
+            return
+    except ValueError:
+        print("❌ 请输入数字")
+        input("按回车继续...")
+        return
+
+    selected_file = os.path.join(backup_dir, backup_files[idx])
+
+    print(f"\n已选择: {backup_files[idx]}")
+
+    # 先备份当前配置
+    print("正在备份当前配置...")
+    current_backup = auto_backup()
+    if current_backup:
+        print(f"✅ 已备份到: {os.path.basename(current_backup)}")
+
+    # 读取备份文件
+    try:
+        with open(selected_file, 'r', encoding='utf-8') as f:
+            backup_data = json.load(f)
+
+        services = backup_data.get("config", {}).get("services", [])
+
+        if not services:
+            print("❌ 备份文件中没有服务配置")
+            input("按回车继续...")
+            return
+
+        print(f"\n备份文件包含 {len(services)} 个服务")
+        print("-" * 40)
+
+        confirm = input("是否清空当前服务后恢复? (y=清空后恢复, n=追加恢复, 0=取消): ").strip().lower()
+
+        if confirm == "0":
+            print("已取消")
+            input("按回车继续...")
+            return
+
+        # 如果选择清空后恢复
+        if confirm == "y":
+            print("\n正在清空当前服务...")
+            # 获取并删除当前所有服务
+            response = requests.get(
+                f"{get_api_url()}/config/services",
+                auth=get_auth(),
+                timeout=10
+            )
+            if response.status_code == 200:
+                current_services = response.json().get("data", {}).get("list", [])
+                for svc in current_services:
+                    name = svc.get("name")
+                    try:
+                        requests.delete(
+                            f"{get_api_url()}/config/services/{name}",
+                            auth=get_auth(),
+                            timeout=10
+                        )
+                    except:
+                        pass
+                print(f"  已清空 {len(current_services)} 个服务")
+
+        # 恢复服务
+        print(f"\n正在恢复 {len(services)} 个服务...")
+        success_count = 0
+        fail_count = 0
+
+        for i, svc in enumerate(services, 1):
+            name = svc.get("name")
+            try:
+                # 构建配置（移除status字段）
+                config = {
+                    "name": svc.get("name"),
+                    "addr": svc.get("addr"),
+                    "handler": svc.get("handler", {"type": "tcp"}),
+                    "listener": svc.get("listener", {"type": "tcp"}),
+                    "forwarder": svc.get("forwarder", {})
+                }
+
+                response = requests.post(
+                    f"{get_api_url()}/config/services",
+                    auth=get_auth(),
+                    headers={"Content-Type": "application/json"},
+                    json=config,
+                    timeout=10
+                )
+
+                if response.status_code in [200, 201]:
+                    print(f"  [{i}/{len(services)}] ✅ {name}")
+                    success_count += 1
+                else:
+                    print(f"  [{i}/{len(services)}] ❌ {name} - HTTP {response.status_code}")
+                    fail_count += 1
+            except Exception as e:
+                print(f"  [{i}/{len(services)}] ❌ {name} - {e}")
+                fail_count += 1
+
+        print("-" * 40)
+        print(f"恢复完成: 成功 {success_count}, 失败 {fail_count}")
+
+    except Exception as e:
+        print(f"❌ 恢复失败: {e}")
+
+    input("\n按回车继续...")
+
 def main():
     """主菜单"""
     while True:
@@ -612,6 +769,7 @@ def main():
         print("  6. 删除所有服务 (需管理密码)")
         print("  7. 测试服务器连接")
         print("  8. 备份服务器配置")
+        print("  9. 从备份恢复配置")
         print("  0. 退出")
         print("-" * 40)
 
@@ -633,6 +791,8 @@ def main():
             test_connection()
         elif choice == "8":
             backup_config()
+        elif choice == "9":
+            restore_config()
         elif choice == "0":
             print("\n再见!")
             sys.exit(0)
